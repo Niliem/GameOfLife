@@ -1,3 +1,6 @@
+# Visual Studio user specific files
+.vs/
+
 # Prerequisites
 *.d
 
@@ -30,3 +33,6 @@
 *.exe
 *.out
 *.app
+
+# Builds
+Debug/*
