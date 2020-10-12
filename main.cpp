@@ -11,6 +11,7 @@ public:
 
 	Cell(bool value)
 		: m_Value{value}
+		, m_PredictionValue{value}
 	{
 	}
 
@@ -24,8 +25,19 @@ public:
 		m_Value = value;
 	}
 
+	void setPrediction(bool newValue)
+	{
+		m_PredictionValue = newValue;
+	}
+
+	void update()
+	{
+		setValue(m_PredictionValue);
+	}
+
 private:
 	bool m_Value = false;
+	bool m_PredictionValue = false;
 };
 
 class Board
@@ -36,9 +48,9 @@ public:
 		, m_Height{height}
 	{
 		m_Cells.resize(getHeight());
-		for (int i = 0; i < getHeight(); i++)
+		for (int h = 0; h < getHeight(); h++)
 		{
-			m_Cells[i].resize(getWidth());
+			m_Cells[h].resize(getWidth());
 		}
 	}
 
@@ -59,23 +71,21 @@ public:
 
 	void update()
 	{
-		std::vector<std::vector<Cell>> temp;
-
-		temp.resize(getHeight());
 		for (auto height = 0; height < getHeight(); ++height)
 		{
-			temp[height].resize(getWidth());
+			for (auto width = 0; width < getWidth(); ++width)
+			{
+				getCell(width, height).setPrediction(makeNewCellState(width, height));
+			}
 		}
 
 		for (auto height = 0; height < getHeight(); ++height)
 		{
 			for (auto width = 0; width < getWidth(); ++width)
 			{
-				temp[height][width] = makeCellState(width, height);
+				getCell(width, height).update();
 			}
 		}
-
-		m_Cells = temp;
 	}
 
 	int getAliveNeightboursCount(int width, int height)
@@ -94,7 +104,7 @@ public:
 		return alive;
 	}
 
-	bool makeCellState(int width, int height)
+	bool makeNewCellState(int width, int height)
 	{
 		auto alive = getAliveNeightboursCount(width, height);
 
