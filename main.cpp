@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stack>
 #include <vector>
 
 class Cell
@@ -125,45 +126,79 @@ private:
 	std::vector<std::vector<Cell>> m_Cells;
 };
 
+class Game
+{
+public:
+	Game(int width, int height)
+	{
+		m_BoardHistory.push({width, height});
+	}
+
+	Board& getBoard()
+	{
+		return m_BoardHistory.top();
+	}
+
+	void popBoard()
+	{
+		if (m_BoardHistory.size() > 1)
+		{
+			m_BoardHistory.pop();
+		}
+	}
+
+	void updateBoard()
+	{
+		Board newBoard = getBoard();
+		newBoard.update();
+		m_BoardHistory.push(newBoard);
+	}
+
+private:
+	std::stack<Board> m_BoardHistory;
+};
+
+void printBoard(Game& game)
+{
+	for (auto h = 0; h < game.getBoard().getHeight(); ++h)
+	{
+		for (auto w = 0; w < game.getBoard().getWidth(); ++w)
+		{
+			std::cout << game.getBoard().getCell(w, h).getValue();
+		}
+		std::cout << std::endl;
+	}
+}
+
 int main()
 {
-	Board board(5, 5);
+	Game game(5, 5);
 
-	board.getCell(1, 2).setValue(true);
-	board.getCell(2, 2).setValue(true);
-	board.getCell(3, 2).setValue(true);
+	game.getBoard().getCell(0, 1).setValue(true);
+	game.getBoard().getCell(1, 2).setValue(true);
+	game.getBoard().getCell(2, 0).setValue(true);
+	game.getBoard().getCell(2, 1).setValue(true);
+	game.getBoard().getCell(2, 2).setValue(true);
 
-	for (auto h = 0; h < board.getHeight(); ++h)
+	printBoard(game);
+
+	char input = 'a';
+	while (input != 'e')
 	{
-		for (auto w = 0; w < board.getWidth(); ++w)
+		std::cout << "n-next, p-prev, e-end" << std::endl;
+
+		std::cin >> input;
+
+		if (input == 'n')
 		{
-			std::cout << board.getCell(w, h).getValue();
+			game.updateBoard();
 		}
-		std::cout << std::endl;
-	}
-
-	board.update();
-	std::cout << std::endl;
-
-	for (auto h = 0; h < board.getHeight(); ++h)
-	{
-		for (auto w = 0; w < board.getWidth(); ++w)
+		else if (input == 'p')
 		{
-			std::cout << board.getCell(w, h).getValue();
+			game.popBoard();
 		}
-		std::cout << std::endl;
-	}
-
-	board.update();
-	std::cout << std::endl;
-
-	for (auto h = 0; h < board.getHeight(); ++h)
-	{
-		for (auto w = 0; w < board.getWidth(); ++w)
-		{
-			std::cout << board.getCell(w, h).getValue();
-		}
-		std::cout << std::endl;
+		system("cls");
+		printBoard(game);
 	}
 
 	return 0;
