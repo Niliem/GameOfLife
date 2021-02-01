@@ -1,4 +1,5 @@
 #include <iostream>
+#include <map>
 #include <stack>
 #include <vector>
 
@@ -92,31 +93,42 @@ public:
 	{
 		long alive = 0;
 
-		alive += getCell(width - 1, height - 1).getValue();
-		alive += getCell(width, height - 1).getValue();
-		alive += getCell(width + 1, height - 1).getValue();
-		alive += getCell(width - 1, height).getValue();
-		alive += getCell(width + 1, height).getValue();
-		alive += getCell(width - 1, height + 1).getValue();
-		alive += getCell(width, height + 1).getValue();
-		alive += getCell(width + 1, height + 1).getValue();
+		for (auto w = width - 1; w <= width + 1; ++w)
+		{
+			for (auto h = height - 1; h <= height + 1; ++h)
+			{
+				if (w == width && h == height)
+					continue;
+
+				alive += getCell(w, h).getValue();
+			}
+		}
 
 		return alive;
 	}
 
+	void clearRules()
+	{
+		m_Rules.clear();
+	}
+
+	void addRule(bool currentState, long aliveCount, bool newState)
+	{
+		m_Rules[{currentState, aliveCount}] = newState;
+	}
+
+	bool getNewCellState(bool currentState, long aliveCount)
+	{
+		auto it = m_Rules.find({currentState, aliveCount});
+		if (it != m_Rules.end())
+			return it->second;
+
+		return false;
+	}
+
 	bool makeNewCellState(int width, int height)
 	{
-		auto alive = getAliveNeightboursCount(width, height);
-
-		if (!getCell(width, height).getValue() && alive == 3)
-		{
-			return true;
-		}
-		else if (getCell(width, height).getValue() && (alive == 3 || alive == 2))
-		{
-			return true;
-		}
-		return false;
+		return getNewCellState(getCell(width, height).getValue(), getAliveNeightboursCount(width, height));
 	}
 
 	int loopWidth(int width)
@@ -132,6 +144,8 @@ public:
 private:
 	int m_Width;
 	int m_Height;
+
+	std::map<std::pair<bool, long>, bool> m_Rules;
 
 	std::vector<std::vector<Cell>> m_Cells;
 };
@@ -183,6 +197,10 @@ void printBoard(Game& game)
 int main()
 {
 	Game game(5, 5);
+
+	game.getBoard().addRule(false, 3, true);
+	game.getBoard().addRule(true, 2, true);
+	game.getBoard().addRule(true, 3, true);
 
 	game.getBoard().getCell(0, 1).setValue(true);
 	game.getBoard().getCell(1, 2).setValue(true);
